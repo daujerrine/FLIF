@@ -37,35 +37,45 @@ public:
     const int EOS = EOF;
 
     FileIO(FILE* fil, const char *aname) : file(fil), name(aname) { }
-    ~FileIO() {
+    ~FileIO()
+    {
         if (file) fclose(file);
     }
-    void flush() {
+    void flush()
+    {
         fflush(file);
     }
-    bool isEOF() {
-      return feof(file);
+    bool isEOF()
+    {
+        return feof(file);
     }
-    long ftell() {
-      return ::ftell(file);
+    long ftell()
+    {
+        return ::ftell(file);
     }
-    int get_c() {
-      return fgetc(file);
+    int get_c()
+    {
+        return fgetc(file);
     }
-    char * gets(char *buf, int n) {
-      return fgets(buf, n, file);
+    char * gets(char *buf, int n)
+    {
+        return fgets(buf, n, file);
     }
-    int fputs(const char *s) {
-      return ::fputs(s, file);
+    int fputs(const char *s)
+    {
+        return ::fputs(s, file);
     }
-    int fputc(int c) {
-      return ::fputc(c, file);
+    int fputc(int c)
+    {
+        return ::fputc(c, file);
     }
-    void fseek(long offset, int where) {
-      ::fseek(file, offset,where);
+    void fseek(long offset, int where)
+    {
+        ::fseek(file, offset,where);
     }
-    const char* getName() const {
-      return name;
+    const char* getName() const
+    {
+        return name;
     }
 };
 
@@ -82,24 +92,28 @@ public:
     const int EOS = -1;
 
     BlobReader(const uint8_t* _data, size_t _data_array_size)
-    : data(_data)
-    , data_array_size(_data_array_size)
-    , seek_pos(0)
+        : data(_data)
+        , data_array_size(_data_array_size)
+        , seek_pos(0)
     {
     }
 
-    bool isEOF() const {
+    bool isEOF() const
+    {
         return seek_pos >= data_array_size;
     }
-    long ftell() const {
+    long ftell() const
+    {
         return seek_pos;
     }
-    int get_c() {
+    int get_c()
+    {
         if(seek_pos >= data_array_size)
             return EOS;
         return data[seek_pos++];
     }
-    char * gets(char *buf, int n) {
+    char * gets(char *buf, int n)
+    {
         int i = 0;
         const int max_write = n-1;
         while(seek_pos < data_array_size && i < max_write)
@@ -111,11 +125,13 @@ public:
         else
             return buf;
     }
-    int fputc(int FLIF_UNUSED(c)) {
-      // cannot write on const memory
-      return EOS;
+    int fputc(int FLIF_UNUSED(c))
+    {
+        // cannot write on const memory
+        return EOS;
     }
-    void fseek(long offset, int where) {
+    void fseek(long offset, int where)
+    {
         switch(where) {
         case SEEK_SET:
             seek_pos = offset;
@@ -128,7 +144,8 @@ public:
             break;
         }
     }
-    static const char* getName() {
+    static const char* getName()
+    {
         return "BlobReader";
     }
 };
@@ -147,7 +164,8 @@ private:
     size_t bytes_used;
     size_t seek_pos;
 
-    void grow(size_t necessary_size) {
+    void grow(size_t necessary_size)
+    {
         if(necessary_size < data_array_size)
             return;
 
@@ -173,14 +191,15 @@ public:
     const int EOS = -1;
 
     BlobIO()
-    : data(0)
-    , data_array_size(0)
-    , bytes_used(0)
-    , seek_pos(0)
+        : data(0)
+        , data_array_size(0)
+        , bytes_used(0)
+        , seek_pos(0)
     {
     }
 
-    ~BlobIO() {
+    ~BlobIO()
+    {
         delete [] data;
     }
 
@@ -196,21 +215,26 @@ public:
         return ptr;
     }
 
-    static void flush() {
+    static void flush()
+    {
         // nothing to do
     }
-    bool isEOF() const {
+    bool isEOF() const
+    {
         return seek_pos >= bytes_used;
     }
-    int ftell() const {
+    int ftell() const
+    {
         return seek_pos;
     }
-    int get_c() {
+    int get_c()
+    {
         if(seek_pos >= bytes_used)
             return EOS;
         return data[seek_pos++];
     }
-    char * gets(char *buf, int n) {
+    char * gets(char *buf, int n)
+    {
         int i = 0;
         const int max_write = n-1;
         while(seek_pos < bytes_used && i < max_write)
@@ -222,11 +246,11 @@ public:
         else
             return buf;
     }
-    int fputs(const char *s) {
+    int fputs(const char *s)
+    {
         size_t i = 0;
         // null-terminated string
-        while(s[i])
-        {
+        while(s[i]) {
             grow(seek_pos + 1);
             data[seek_pos++] = s[i++];
             if(bytes_used < seek_pos)
@@ -234,7 +258,8 @@ public:
         }
         return 0;
     }
-    int fputc(int c) {
+    int fputc(int c)
+    {
         grow(seek_pos + 1);
 
         data[seek_pos++] = static_cast<uint8_t>(c);
@@ -242,7 +267,8 @@ public:
             bytes_used = seek_pos+1;
         return c;
     }
-    void fseek(long offset, int where) {
+    void fseek(long offset, int where)
+    {
         switch(where) {
         case SEEK_SET:
             seek_pos = offset;
@@ -255,7 +281,8 @@ public:
             break;
         }
     }
-    static const char* getName() {
+    static const char* getName()
+    {
         return "BlobIO";
     }
 };

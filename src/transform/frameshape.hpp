@@ -26,35 +26,47 @@ limitations under the License.
 
 
 template <typename IO>
-class TransformFrameShape final : public Transform<IO> {
+class TransformFrameShape final : public Transform<IO>
+{
 protected:
     std::vector<uint32_t> b;
     std::vector<uint32_t> e;
     uint32_t cols;
     uint32_t nb;
 
-    bool undo_redo_during_decode() override { return false; }
+    bool undo_redo_during_decode() override
+    {
+        return false;
+    }
 
-    const ColorRanges *meta(Images& images, const ColorRanges *srcRanges) override {
+    const ColorRanges *meta(Images& images, const ColorRanges *srcRanges) override
+    {
         uint32_t pos=0;
         for (unsigned int fr=1; fr<images.size(); fr++) {
             Image& image = images[fr];
             if (image.seen_before >= 0) continue;
             for (uint32_t r=0; r<image.rows(); r++) {
-               assert(pos<nb);
-               image.col_begin[r] = b[pos];
-               image.col_end[r] = e[pos];
-               pos++;
+                assert(pos<nb);
+                image.col_begin[r] = b[pos];
+                image.col_end[r] = e[pos];
+                pos++;
             }
         }
         return new DupColorRanges(srcRanges);
     }
 
-    void configure(const int setting) override { if (nb==0) nb=setting; else cols=setting; } // ok this is dirty
+    void configure(const int setting) override
+    {
+        if (nb==0) nb=setting;    // ok this is dirty
+        else cols=setting;
+    }
 
-    bool load(const ColorRanges *, RacIn<IO> &rac) override {
+    bool load(const ColorRanges *, RacIn<IO> &rac) override
+    {
         SimpleSymbolCoder<FLIFBitChanceMeta, RacIn<IO>, 18> coder(rac);
-        for (unsigned int i=0; i<nb; i+=1) {b.push_back(coder.read_int(0,cols));}
+        for (unsigned int i=0; i<nb; i+=1) {
+            b.push_back(coder.read_int(0,cols));
+        }
         for (unsigned int i=0; i<nb; i+=1) {
             e.push_back(cols-coder.read_int(0,cols-b[i]));
             if (e[i] > cols || e[i] < b[i] || e[i] <= 0) {
@@ -66,15 +78,21 @@ protected:
     }
 
 #if HAS_ENCODER
-    void save(const ColorRanges *, RacOut<IO> &rac) const override {
+    void save(const ColorRanges *, RacOut<IO> &rac) const override
+    {
         SimpleSymbolCoder<FLIFBitChanceMeta, RacOut<IO>, 18> coder(rac);
         assert(nb == b.size());
         assert(nb == e.size());
-        for (unsigned int i=0; i<nb; i+=1) { coder.write_int(0,cols,b[i]); }
-        for (unsigned int i=0; i<nb; i+=1) { coder.write_int(0,cols-b[i],cols-e[i]); }
+        for (unsigned int i=0; i<nb; i+=1) {
+            coder.write_int(0,cols,b[i]);
+        }
+        for (unsigned int i=0; i<nb; i+=1) {
+            coder.write_int(0,cols-b[i],cols-e[i]);
+        }
     }
 
-    bool process(const ColorRanges *srcRanges, const Images &images) override {
+    bool process(const ColorRanges *srcRanges, const Images &images) override
+    {
         if (images.size()<2) return false;
         int np=srcRanges->numPlanes();
         nb = 0;
@@ -88,20 +106,39 @@ protected:
                 for (uint32_t c=0; c<image.cols(); c++) {
                     if (image.alpha_zero_special && np>3 && image(3,r,c) == 0 && images[fr-1](3,r,c)==0) continue;
                     for (int p=0; p<np; p++) {
-                       if(image(p,r,c) != images[fr-1](p,r,c)) { beginfound=true; break;}
+                        if(image(p,r,c) != images[fr-1](p,r,c)) {
+                            beginfound=true;
+                            break;
+                        }
                     }
-                    if (beginfound) {b.push_back(c); break;}
+                    if (beginfound) {
+                        b.push_back(c);
+                        break;
+                    }
                 }
-                if (!beginfound) {b.push_back(image.cols()); e.push_back(image.cols()); continue;}
+                if (!beginfound) {
+                    b.push_back(image.cols());
+                    e.push_back(image.cols());
+                    continue;
+                }
                 bool endfound=false;
                 for (uint32_t c=image.cols()-1; c >= b.back(); c--) {
                     if (image.alpha_zero_special && np>3 && image(3,r,c) == 0 && images[fr-1](3,r,c)==0) continue;
                     for (int p=0; p<np; p++) {
-                       if(image(p,r,c) != images[fr-1](p,r,c)) { endfound=true; break;}
+                        if(image(p,r,c) != images[fr-1](p,r,c)) {
+                            endfound=true;
+                            break;
+                        }
                     }
-                    if (endfound) {e.push_back(c+1); break;}
+                    if (endfound) {
+                        e.push_back(c+1);
+                        break;
+                    }
                 }
-                if (!endfound) {e.push_back(0); continue;} //shouldn't happen, right?
+                if (!endfound) {
+                    e.push_back(0);    //shouldn't happen, right?
+                    continue;
+                }
             }
         }
         /* does not seem to do much good at all

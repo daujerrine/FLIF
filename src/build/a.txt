@@ -1,0 +1,47 @@
+Hexdumps:
+=========
+
+a.flif: (1x1 png image, white pixel)
+00000000  46 4c 49 46 31 31 00 00  00 30 89 8b 44 ad        |FLIF11...0..D.|
+0000000e
+
+d.flif: (300x200 png image, solid white)
+00000000  46 4c 49 46 41 31 82 2b  81 47 00 42 4f 00 61 7b  |FLIFA1.+.G.BO.a{|
+00000010  f3 bf f5 3f                                       |...?|
+00000014
+
+e.flif: (1x1 gif, 4 frames)
+00000000  46 4c 49 46 53 31 00 00  02 00 00 00 d6 00 d6 00  |FLIFS1..........|
+00000010  d6 00 d6 dd 1c 31 02 49  6f 4a d5 50 a0 76 4a ff  |.....1.IoJ.P.vJ.|
+00000020
+(Note the value of nframes - 2 (9th byte))
+
+f.flif: (10x10 gif, 2 frames)
+00000000  46 4c 49 46 53 31 09 09  00 00 00 00 d6 00 d6 80  |FLIFS1..........|
+00000010  30 7e 27 29 cc 2d b0 89  20 c7 60 e9 29 46 5a 00  |0~').-.. .`.)FZ.|
+00000020  1b e9 78 35 07 77 f5 b6  86 ea c1 47 a9 fd 80 e4  |..x5.w.....G....|
+00000030  98 8e 57 81 2a 09 ed ac  c1 89 8d c7 a6 96 80 39  |..W.*..........9|
+00000040  fb 62 3a 4d cc 8b 18 6e  0f c3 ad 16 8a 13 98 31  |.b:M...n.......1|
+00000050  bf 74 ae d1 64 40 37 0c  83 c2 02 95 fe c2 bf 6b  |.t..d@7........k|
+00000060  8f b7 a8 c0 da d7 af 06  df cd 70 46 18 53 51 e0  |..........pF.SQ.|
+... (truncated <total 561 bytes>) ...
+
+a1.flif: (1x1 png image, solid white with dummy EXIF data)
+00000000  46 4c 49 46 31 31 00 00  65 58 69 66 81 3b 75 90  |FLIF11..eXif.;u.|
+00000010  31 0a c2 40 10 45 67 b3  89 04 c1 ce 4a 41 d2 08  |1..@.Eg.....JA..|
+00000020  62 11 76 d6 90 62 7b d1  14 06 3b 6f 20 e4 06 9e  |b.v..b{...;o ...|
+00000030  40 2d 2c 2d 2d ac 3d 84  67 f0 48 fe cc ae 9a c6  |@-,--.=.g.H.....|
+00000040  0d 8f ff f9 99 4c 66 76  79 68 f6 44 55 35 a7 94  |.....Lfvyh.DU5..|
+00000050  88 fa 44 2a 26 05 27 74  7c a4 34 69 e8 11 8c 54  |..D*&.'t|.4i...T|
+00000060  22 d9 05 8c 83 bf 82 19  6a a4 16 b0 8a 68 00 bd  |".......j....h..|
+00000070  01 0b 3f 84 3e 40 73 f2  3d 9f 60 7a f6 fe 45 fe  |..?.>@s.=.`z..E.|
+00000080  a4 f2 ac c3 1f 3f ba aa  36 db cc e6 6c 72 2e d0  |.....?..6...lr..|
+00000090  cb 58 e3 cc c2 19 ce b8  70 96 1d 97 a8 52 77 fd  |.X......p....Rw.|
+000000a0  9d b4 3d 3d b8 48 e6 a8  65 9e 44 66 9f e0 b5 0e  |..==.H..e.Df....|
+000000b0  f9 0e c4 21 2f 91 b7 5b  fc be f6 3b d5 21 48 3a  |...!/..[...;.!H:|
+000000c0  9d bb fa 2f b7 fe 26 e9  0d 00 30 89 9e 00 e2 35  |.../..&...0....5|
+000000d0  5a 4e 1f                                          |ZN.|
+000000d3
+(Note how the nframes - 2 field is omitted over here. Instead it directly starts
+with the EXIF metadata portion)
+

@@ -26,7 +26,8 @@ limitations under the License.
 
 #include "io.hpp"
 
-void e_printf(const char *format, ...) {
+void e_printf(const char *format, ...)
+{
     va_list args;
     va_start(args, format);
     vfprintf(stderr, format, args);
@@ -40,15 +41,18 @@ static int verbosity = 10;
 static int verbosity = 1;
 #endif
 static FILE * my_stdout = stdout;
-void increase_verbosity(int how_much) {
+void increase_verbosity(int how_much)
+{
     verbosity += how_much;
 }
 
-int get_verbosity() {
+int get_verbosity()
+{
     return verbosity;
 }
 
-void v_printf(const int v, const char *format, ...) {
+void v_printf(const int v, const char *format, ...)
+{
     if (verbosity < v) return;
     va_list args;
     va_start(args, format);
@@ -57,7 +61,8 @@ void v_printf(const int v, const char *format, ...) {
     va_end(args);
 }
 
-void v_printf_tty(const int v, const char *format, ...) {
+void v_printf_tty(const int v, const char *format, ...)
+{
     if (verbosity < v) return;
 #ifdef _WIN32
     if(!_isatty(_fileno(my_stdout))) return;
@@ -71,6 +76,7 @@ void v_printf_tty(const int v, const char *format, ...) {
     va_end(args);
 }
 
-void redirect_stdout_to_stderr() {
+void redirect_stdout_to_stderr()
+{
     my_stdout = stderr;
 }

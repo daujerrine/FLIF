@@ -31,6 +31,11 @@ limitations under the License.
 #include "flif_config.h"
 
 #include "io.hpp"
+#include <stdio.h>
+#include <stdint.h>
+#include <assert.h>
+#define __PLN__ printf("At: [%s] %s, %d\n", __func__, __FILE__, __LINE__);
+#define MSG(fmt, ...) printf("[%s] " fmt, __func__, ##__VA_ARGS__)
 
 
 extern int64_t pixels_todo;
@@ -70,32 +75,47 @@ ColorVal predict_and_calcProps_scanlines(Properties &properties, const ColorRang
 
 void initPropRanges(Ranges &propRanges, const ColorRanges &ranges, int p);
 
-template<typename I> I inline median3(I a, I b, I c) {
+template<typename I> I inline median3(I a, I b, I c)
+{
     if (a < b) {
         if (b < c) {
-          return b;
+            return b;
         } else {
-          return a < c ? c : a;
+            return a < c ? c : a;
         }
     } else {
-       if (a < c) {
-          return a;
-       } else {
-          return b < c ? c : b;
-       }
+        if (a < c) {
+            return a;
+        } else {
+            return b < c ? c : b;
+        }
     }
 }
 
 template <typename plane_t, bool nobordercases>
-ColorVal predict_and_calcProps_scanlines_plane(Properties &properties, const ColorRanges *ranges, const Image &image, const plane_t &plane, const int p, const uint32_t r, const uint32_t c, ColorVal &min, ColorVal &max, const ColorVal fallback) {
+ColorVal predict_and_calcProps_scanlines_plane(Properties &properties,
+                                               const ColorRanges *ranges,
+                                               const Image &image,
+                                               const plane_t &plane,
+                                               const int p,
+                                               const uint32_t r,
+                                               const uint32_t c,
+                                               ColorVal &min,
+                                               ColorVal &max,
+                                               const ColorVal fallback)
+{
     ColorVal guess;
     int which = 0;
     int index=0;
     if (p < 3) {
         for (int pp = 0; pp < p; pp++) {
+            printf("&a %d %d\n", index, image(pp,r,c));
             properties[index++] = image(pp,r,c);
         }
-        if (image.numPlanes()>3) properties[index++] = image(3,r,c);
+        if (image.numPlanes()>3) {
+            printf("&b %d %d\n", index, image(3,r,c));
+            properties[index++] = image(3,r,c);
+        }
     }
     ColorVal left = (nobordercases || c>0 ? plane.get(r,c-1) : (r > 0 ? plane.get(r-1, c) : fallback));
     ColorVal top = (nobordercases || r>0 ? plane.get(r-1,c) : left);
@@ -114,95 +134,130 @@ ColorVal predict_and_calcProps_scanlines_plane(Properties &properties, const Col
     properties[index++] = guess;
     properties[index++] = which;
 
-    if (nobordercases || (c > 0 && r > 0)) { properties[index++] = left - topleft; properties[index++] = topleft - top; }
-    else   { properties[index++] = 0; properties[index++] = 0;  }
+    if (nobordercases || (c > 0 && r > 0)) {
+        printf("&2a %d %d\n", index, left - topleft);
+        properties[index++] = left - topleft;
+        printf("&2a %d %d\n", index, topleft - top);
+        properties[index++] = topleft - top;
+    } else {
+        printf("&2b %d 0\n", index);
+        properties[index++] = 0;
+        printf("&2b %d 0\n", index);
+        properties[index++] = 0;
+    }
 
-    if (nobordercases || (c+1 < image.cols() && r > 0)) properties[index++] = top - plane.get(r-1,c+1); // top - topright
-    else   properties[index++] = 0;
-    if (nobordercases || r > 1) properties[index++] = plane.get(r-2,c)-top;    // toptop - top
-    else properties[index++] = 0;
-    if (nobordercases || c > 1) properties[index++] = plane.get(r,c-2)-left;    // leftleft - left
-    else properties[index++] = 0;
+    if (nobordercases || (c+1 < image.cols() && r > 0)) {
+        printf("&3a %d %d\n", index, top - plane.get(r-1,c+1));
+        properties[index++] = top - plane.get(r-1,c+1); // top - topright
+    } else {
+        printf("&3b %d 0\n", index);
+        properties[index++] = 0;
+    }
+    if (nobordercases || r > 1) {
+        printf("&4a %d %d\n", index, plane.get(r-2,c)-top);
+        properties[index++] = plane.get(r-2,c)-top;    // toptop - top
+    } else {
+        printf("&4b %d 0\n", index);
+        properties[index++] = 0;
+    }
+    if (nobordercases || c > 1) {
+        printf("&5a %d %d\n", index, plane.get(r,c-2) - left);
+        properties[index++] = plane.get(r,c-2) - left;    // leftleft - left
+    } else {
+        printf("&5b %d 0\n", index);
+        properties[index++] = 0;
+    }
+    for(int i = 0; i < properties.size(); ++i)
+        printf("%d ", properties[i]);
+    printf("\n");
+    printf("psl fallback = %d left = %d top = %d topleft = %d gradienttl = %d guess = %d\n", fallback, left, top, topleft, gradientTL, guess);
+    printf("r = %u c = %u min = %u max = %u\n", r, c, min, max);
     return guess;
 }
 
 // Prediction used for interpolation / alpha=0 pixels. Does not have to be the same as the guess used for encoding/decoding.
 template <typename plane_t>
-inline ColorVal predictScanlines_plane(const plane_t &plane, uint32_t r, uint32_t c, ColorVal grey) {
+inline ColorVal predictScanlines_plane(const plane_t &plane, uint32_t r, uint32_t c, ColorVal grey)
+{
     ColorVal left = (c>0 ? plane.get(r,c-1) : (r > 0 ? plane.get(r-1, c) : grey));
     ColorVal top = (r>0 ? plane.get(r-1,c) : left);
     ColorVal topleft = (r>0 && c>0 ? plane.get(r-1,c-1) : top);
     ColorVal gradientTL = left + top - topleft;
+    printf("sl guess = %d\n", median3(gradientTL, left, top));
     return median3(gradientTL, left, top);
 }
 
 // Prediction used for interpolation / alpha=0 pixels. Does not have to be the same as the guess used for encoding/decoding.
 template <typename plane_t>
-inline ColorVal predict_plane_horizontal(const plane_t &plane, int z, int p, uint32_t r, uint32_t c, uint32_t rows, const int predictor) {
+inline ColorVal predict_plane_horizontal(const plane_t &plane, int z, int p, uint32_t r, uint32_t c, uint32_t rows, const int predictor)
+{
     if (p==4) return 0;
     assert(z%2 == 0); // filling horizontal lines
     ColorVal top = plane.get(z,r-1,c);
     ColorVal bottom = (r+1 < rows ? plane.get(z,r+1,c) : top ); // (c > 0 ? image(p, z, r, c - 1) : top));
     if (predictor == 0) {
-      ColorVal avg = (top + bottom)>>1;
-      return avg;
+        ColorVal avg = (top + bottom)>>1;
+        return avg;
     } else if (predictor == 1) {
-      ColorVal avg = (top + bottom)>>1;
-      ColorVal left = (c>0 ? plane.get(z,r,c-1) : top);
-      ColorVal topleft = (c>0 ? plane.get(z,r-1,c-1) : top);
-      ColorVal bottomleft = (c>0 && r+1 < rows ? plane.get(z,r+1,c-1) : left);
-      return median3(avg, (ColorVal)(left+top-topleft), (ColorVal)(left+bottom-bottomleft));
+        ColorVal avg = (top + bottom)>>1;
+        ColorVal left = (c>0 ? plane.get(z,r,c-1) : top);
+        ColorVal topleft = (c>0 ? plane.get(z,r-1,c-1) : top);
+        ColorVal bottomleft = (c>0 && r+1 < rows ? plane.get(z,r+1,c-1) : left);
+        return median3(avg, (ColorVal)(left+top-topleft), (ColorVal)(left+bottom-bottomleft));
     } else { // if (predictor == 2) {
-      ColorVal left = (c>0 ? plane.get(z,r,c-1) : top);
-      return median3(top,bottom,left);
+        ColorVal left = (c>0 ? plane.get(z,r,c-1) : top);
+        return median3(top,bottom,left);
     }
 }
 
 template <typename plane_t>
-inline ColorVal predict_plane_vertical(const plane_t &plane, int z, int p, uint32_t r, uint32_t c, uint32_t cols, const int predictor) {
+inline ColorVal predict_plane_vertical(const plane_t &plane, int z, int p, uint32_t r, uint32_t c, uint32_t cols, const int predictor)
+{
     if (p==4) return 0;
     assert(z%2 == 1); // filling vertical lines
     ColorVal left = plane.get(z,r,c-1);
     ColorVal right = (c+1 < cols ? plane.get(z,r,c+1) : left ); //(r > 0 ? image(p, z, r-1, c) : left));
     if (predictor == 0) {
-      ColorVal avg = (left + right)>>1;
-      return avg;
+        ColorVal avg = (left + right)>>1;
+        return avg;
     } else if (predictor == 1) {
-      ColorVal avg = (left + right)>>1;
-      ColorVal top = (r>0 ? plane.get(z,r-1,c) : left);
-      ColorVal topleft = (r>0 ? plane.get(z,r-1,c-1) : left);
-      ColorVal topright = (r>0 && c+1 < cols ? plane.get(z,r-1,c+1) : top);
-      return median3(avg, (ColorVal)(left+top-topleft), (ColorVal)(right+top-topright));
+        ColorVal avg = (left + right)>>1;
+        ColorVal top = (r>0 ? plane.get(z,r-1,c) : left);
+        ColorVal topleft = (r>0 ? plane.get(z,r-1,c-1) : left);
+        ColorVal topright = (r>0 && c+1 < cols ? plane.get(z,r-1,c+1) : top);
+        return median3(avg, (ColorVal)(left+top-topleft), (ColorVal)(right+top-topright));
     } else { // if (predictor == 2) {
-      ColorVal top = (r>0 ? plane.get(z,r-1,c) : left);
-      return median3(top,left,right);
+        ColorVal top = (r>0 ? plane.get(z,r-1,c) : left);
+        return median3(top,left,right);
     }
 }
 
 // Prediction used for interpolation / alpha=0 pixels. Does not have to be the same as the guess used for encoding/decoding.
-inline ColorVal predictScanlines(const Image &image, int p, uint32_t r, uint32_t c, ColorVal grey) {
+inline ColorVal predictScanlines(const Image &image, int p, uint32_t r, uint32_t c, ColorVal grey)
+{
     return predictScanlines_plane(image.getPlane(p),r,c,grey);
 }
 
 // Prediction used for interpolation / alpha=0 pixels. Does not have to be the same as the guess used for encoding/decoding.
-inline ColorVal predict(const Image &image, int z, int p, uint32_t r, uint32_t c, const int predictor) {
+inline ColorVal predict(const Image &image, int z, int p, uint32_t r, uint32_t c, const int predictor)
+{
     if (p==4) return 0;
     ColorVal prediction;
     if (z%2 == 0) { // filling horizontal lines
-      prediction = predict_plane_horizontal(image.getPlane(p),z,p,r,c,image.rows(z),predictor);
+        prediction = predict_plane_horizontal(image.getPlane(p),z,p,r,c,image.rows(z),predictor);
     } else { // filling vertical lines
-      prediction = predict_plane_vertical(image.getPlane(p),z,p,r,c,image.cols(z),predictor);
+        prediction = predict_plane_vertical(image.getPlane(p),z,p,r,c,image.cols(z),predictor);
     }
 
     // accurate snap-to-ranges: too expensive?
-/*
-    if (p == 1 || p == 2) {
-      prevPlanes pp(p);
-      ColorVal min, max;
-      for (int prev=0; prev<p; prev++) pp[prev]=image(prev,z,r,c);
-      ranges->snap(p,pp,min,max,prediction);
-    }
-*/
+    /*
+        if (p == 1 || p == 2) {
+          prevPlanes pp(p);
+          ColorVal min, max;
+          for (int prev=0; prev<p; prev++) pp[prev]=image(prev,z,r,c);
+          ranges->snap(p,pp,min,max,prediction);
+        }
+    */
     return prediction;
 
 }
@@ -215,7 +270,8 @@ inline ColorVal predict(const Image &image, int z, int p, uint32_t r, uint32_t c
 template <typename plane_t, typename plane_tY, bool horizontal, bool nobordercases, int p, typename ranges_t>
 ColorVal predict_and_calcProps_plane(Properties &properties, const ranges_t *ranges, const Image &image, const plane_t &plane, const plane_tY &planeY, const int z, const uint32_t r, const uint32_t c, ColorVal &min, ColorVal &max, const int predictor) ATTRIBUTE_HOT;
 template <typename plane_t, typename plane_tY, bool horizontal, bool nobordercases, int p, typename ranges_t>
-ColorVal predict_and_calcProps_plane(Properties &properties, const ranges_t *ranges, const Image &image, const plane_t &plane, const plane_tY &planeY, const int z, const uint32_t r, const uint32_t c, ColorVal &min, ColorVal &max, const int predictor) {
+ColorVal predict_and_calcProps_plane(Properties &properties, const ranges_t *ranges, const Image &image, const plane_t &plane, const plane_tY &planeY, const int z, const uint32_t r, const uint32_t c, ColorVal &min, ColorVal &max, const int predictor)
+{
     ColorVal guess;
     //int which = 0;
     int index = 0;
@@ -249,7 +305,7 @@ ColorVal predict_and_calcProps_plane(Properties &properties, const ranges_t *ran
         else if (median == topleftgradient) which = 1;
         properties[index++]=which;
         if (p == 1 || p == 2) {
-          properties[index++] = PIXELY(z,r,c) - ((PIXELY(z,r-1,c)+PIXELY(z,(nobordercases || bottomPresent ? r+1 : r-1),c))>>1);
+            properties[index++] = PIXELY(z,r,c) - ((PIXELY(z,r-1,c)+PIXELY(z,(nobordercases || bottomPresent ? r+1 : r-1),c))>>1);
         }
         if (predictor == 0) guess = avg;
         else if (predictor == 1)
@@ -277,7 +333,7 @@ ColorVal predict_and_calcProps_plane(Properties &properties, const ranges_t *ran
         else if (median == topleftgradient) which = 1;
         properties[index++]=which;
         if (p == 1 || p == 2) {
-          properties[index++] = PIXELY(z,r,c) - ((PIXELY(z,r,c-1)+PIXELY(z,r,(nobordercases || rightPresent ? c+1 : c-1)))>>1);
+            properties[index++] = PIXELY(z,r,c) - ((PIXELY(z,r,c-1)+PIXELY(z,r,(nobordercases || rightPresent ? c+1 : c-1)))>>1);
         }
         if (predictor == 0) guess = avg;
         else if (predictor == 1)
@@ -317,7 +373,8 @@ int plane_zoomlevels(const Image &image, const int beginZL, const int endZL);
 
 std::pair<int, int> plane_zoomlevel(const Image &image, const int beginZL, const int endZL, int i, const ColorRanges *ranges);
 
-inline std::vector<ColorVal> computeGreys(const ColorRanges *ranges) {
+inline std::vector<ColorVal> computeGreys(const ColorRanges *ranges)
+{
     std::vector<ColorVal> greys; // a pixel with values in the middle of the bounds
     for (int p = 0; p < ranges->numPlanes(); p++) greys.push_back((ranges->min(p)+ranges->max(p))/2);
     return greys;

@@ -57,7 +57,8 @@ void build_table(uint16_t *zero_state, uint16_t *one_state, size_t size, uint32_
 }
 
 /** Computes an approximation of log(4096 / x) / log(2) * base */
-static uint32_t log4kf(int x, uint32_t base) {
+static uint32_t log4kf(int x, uint32_t base)
+{
     int bits = 8 * sizeof(int) - __builtin_clz(x);
     uint64_t y = ((uint64_t)x) << (32 - bits);
     uint32_t res = base * (13 - bits);
@@ -73,7 +74,8 @@ static uint32_t log4kf(int x, uint32_t base) {
     return res;
 }
 
-Log4kTable::Log4kTable() {
+Log4kTable::Log4kTable()
+{
     data[0] = 0;
     for (int i = 1; i <= 4096; i++) {
         data[i] = (log4kf(i, (65535UL << 16) / 12) + (1 << 15)) >> 16;

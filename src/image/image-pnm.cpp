@@ -12,21 +12,28 @@
 #ifdef HAS_ENCODER
 
 // auxiliary function to read a non-zero number from a PNM header, ignoring whitespace and comments
-unsigned int read_pnm_int(FILE *fp, char* buf, char** t) {
+unsigned int read_pnm_int(FILE *fp, char* buf, char** t)
+{
     long result = strtol(*t,t,10);
     if (result == 0) {
         // no valid int found here, try next line
         do {
-          *t = fgets(buf, PPMREADBUFLEN, fp);
-          if ( *t == NULL ) {return false;}
+            *t = fgets(buf, PPMREADBUFLEN, fp);
+            if ( *t == NULL ) {
+                return false;
+            }
         } while ( strncmp(buf, "#", 1) == 0 || strncmp(buf, "\n", 1) == 0);
         result = strtol(*t,t,10);
-        if (result == 0) { e_printf("Invalid PNM file.\n"); fclose(fp); }
+        if (result == 0) {
+            e_printf("Invalid PNM file.\n");
+            fclose(fp);
+        }
     }
     return result;
 }
 
-bool image_load_pnm(const char *filename, Image& image) {
+bool image_load_pnm(const char *filename, Image& image)
+{
     FILE *fp = NULL;
     if (!strcmp(filename,"-")) fp = stdin;
     else fp = fopen(filename,"rb");
@@ -47,7 +54,9 @@ bool image_load_pnm(const char *filename, Image& image) {
     if ( (!strncmp(buf, "P4", 2)) ) type=4;
     if ( (!strncmp(buf, "P5", 2)) ) type=5;
     if ( (!strncmp(buf, "P6", 2)) ) type=6;
-    if ( (!strncmp(buf, "P7", 2)) ) {return image_load_pam_fp(fp, image);}
+    if ( (!strncmp(buf, "P7", 2)) ) {
+        return image_load_pam_fp(fp, image);
+    }
     if (type==0) {
         if (buf[0] == 'P') e_printf("PNM file is not of type P4, P5, P6 or P7, cannot read other types.\n");
         else e_printf("This does not look like a PNM file.\n");
@@ -58,12 +67,12 @@ bool image_load_pnm(const char *filename, Image& image) {
     if (!(width = read_pnm_int(fp,buf,&t))) return false;
     if (!(height = read_pnm_int(fp,buf,&t))) return false;
     if (type>4) {
-      if (!(maxval = read_pnm_int(fp,buf,&t))) return false;
-      if ( maxval > 0xffff ) {
-        e_printf("Invalid PNM file (more than 16-bit?)\n");
-        fclose(fp);
-        return false;
-      }
+        if (!(maxval = read_pnm_int(fp,buf,&t))) return false;
+        if ( maxval > 0xffff ) {
+            e_printf("Invalid PNM file (more than 16-bit?)\n");
+            fclose(fp);
+            return false;
+        }
     } else maxval=1;
 #ifndef SUPPORT_HDR
     if (maxval > 0xff) {
@@ -74,38 +83,38 @@ bool image_load_pnm(const char *filename, Image& image) {
     unsigned int nbplanes=(type==6?3:1);
     image.init(width, height, 0, maxval, nbplanes);
     if (type==4) {
-      char byte=0;
-      for (unsigned int y=0; y<height; y++) {
-        for (unsigned int x=0; x<width; x++) {
+        char byte=0;
+        for (unsigned int y=0; y<height; y++) {
+            for (unsigned int x=0; x<width; x++) {
                 if (x%8 == 0) byte = fgetc(fp);
                 image.set(0,y,x, (byte & (128>>(x%8)) ? 0 : 1));
+            }
         }
-      }
     } else {
-      if (maxval > 0xff) {
-        for (unsigned int y=0; y<height; y++) {
-          for (unsigned int x=0; x<width; x++) {
-            for (unsigned int c=0; c<nbplanes; c++) {
-                ColorVal pixel= (fgetc(fp) << 8);
-                pixel += fgetc(fp);
-                if (pixel > (int)maxval) {
-                    fclose(fp);
-                    e_printf("Invalid PNM file: value %i is larger than declared maxval %u\n", pixel, maxval);
-                    return false;
+        if (maxval > 0xff) {
+            for (unsigned int y=0; y<height; y++) {
+                for (unsigned int x=0; x<width; x++) {
+                    for (unsigned int c=0; c<nbplanes; c++) {
+                        ColorVal pixel= (fgetc(fp) << 8);
+                        pixel += fgetc(fp);
+                        if (pixel > (int)maxval) {
+                            fclose(fp);
+                            e_printf("Invalid PNM file: value %i is larger than declared maxval %u\n", pixel, maxval);
+                            return false;
+                        }
+                        image.set(c,y,x, pixel);
+                    }
                 }
-                image.set(c,y,x, pixel);
             }
-          }
-        }
-      } else {
-        for (unsigned int y=0; y<height; y++) {
-          for (unsigned int x=0; x<width; x++) {
-            for (unsigned int c=0; c<nbplanes; c++) {
-                image.set(c,y,x, fgetc(fp));
+        } else {
+            for (unsigned int y=0; y<height; y++) {
+                for (unsigned int x=0; x<width; x++) {
+                    for (unsigned int c=0; c<nbplanes; c++) {
+                        image.set(c,y,x, fgetc(fp));
+                    }
+                }
             }
-          }
         }
-      }
     }
 //    if (fp != stdin) fclose(fp);
     return true;

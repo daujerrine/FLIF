@@ -1,0 +1,1 @@
+/usr/bin/cc -fPIC  -Wall -Wextra  -shared -Wl,-soname,libpixbufloader-flif.so -o libpixbufloader-flif.so CMakeFiles/pixbufloader-flif.dir/flif-pixbuf-loader.c.o -Wl,-rpath,/home/turpentine/Documents/sources/FLIF/src/build: -lgdk_pixbuf-2.0 -lgobject-2.0 -lglib-2.0 libflif.so.0 -lpng 

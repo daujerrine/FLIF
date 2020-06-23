@@ -9,7 +9,8 @@
 #ifdef HAS_ENCODER
 
 
-bool image_load_metadata(const char *filename, Image& image, const char *chunkname) {
+bool image_load_metadata(const char *filename, Image& image, const char *chunkname)
+{
     FILE *fp = fopen(filename,"rb");
     if (!fp) {
         e_printf("Could not open file: %s\n", filename);
@@ -33,20 +34,21 @@ bool image_load_metadata(const char *filename, Image& image, const char *chunkna
 }
 #endif
 
-bool image_save_metadata(const char *filename, const Image& image, const char *chunkname) {
+bool image_save_metadata(const char *filename, const Image& image, const char *chunkname)
+{
     unsigned char * contents;
     size_t length;
     if (image.get_metadata(chunkname, &contents, &length)) {
-      FILE *fp = fopen(filename,"wb");
-      if (!fp) {
-        return false;
-      }
-      fwrite((void *) contents, length, 1, fp);
-      fclose(fp);
-      free(contents);
-      return true;
+        FILE *fp = fopen(filename,"wb");
+        if (!fp) {
+            return false;
+        }
+        fwrite((void *) contents, length, 1, fp);
+        fclose(fp);
+        free(contents);
+        return true;
     } else {
-      e_printf("Asking to write metadata of type %s to file %s, however no such metadata is present in the input file.\n", chunkname, filename);
-      return false;
+        e_printf("Asking to write metadata of type %s to file %s, however no such metadata is present in the input file.\n", chunkname, filename);
+        return false;
     }
 }

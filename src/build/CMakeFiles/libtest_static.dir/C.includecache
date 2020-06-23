@@ -1,0 +1,40 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../library/flif.h
+flif_dec.h
+../library/flif_dec.h
+flif_enc.h
+../library/flif_enc.h
+
+../library/flif_common.h
+stdint.h
+-
+stddef.h
+-
+
+../library/flif_dec.h
+stdio.h
+-
+flif_common.h
+../library/flif_common.h
+
+../library/flif_enc.h
+flif_common.h
+../library/flif_common.h
+
+/home/turpentine/Documents/sources/FLIF/tools/test.c
+inttypes.h
+-
+flif.h
+-
+stdlib.h
+-
+stdio.h
+-
+

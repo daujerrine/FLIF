@@ -1,7 +1,6 @@
 #pragma once
 
-struct FLIF_INFO
-{
+struct FLIF_INFO {
     FLIF_INFO();
 
     uint32_t width;
@@ -21,6 +20,7 @@ template <typename IO>
 bool flif_decode(IO& io, Images &images, callback_t callback, void *user_data, int, Images &partial_images, flif_options &options, metadata_options &md, FLIF_INFO* info);
 
 template <typename IO>
-bool flif_decode(IO& io, Images &images, flif_options &options, metadata_options &md) {
+bool flif_decode(IO& io, Images &images, flif_options &options, metadata_options &md)
+{
     return flif_decode(io, images, NULL, NULL, 0, images, options, md, 0);
 }

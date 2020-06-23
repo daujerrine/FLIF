@@ -31,7 +31,7 @@ bool ioget_int_8bit (IO& io, int* result)
 {
     int c = io.get_c();
     if (c == io.EOS) {
-        e_printf ("Unexpected EOS");
+        printf(">>>>Unexpected EOS");
         return false;
     }
 
@@ -45,7 +45,7 @@ bool ioget_int_16bit_bigendian (IO& io, int* result)
     int c1;
     int c2;
     if (!(ioget_int_8bit (io, &c1) &&
-          ioget_int_8bit (io, &c2)))
+            ioget_int_8bit (io, &c2)))
         return false;
 
     *result = (c1 << 8) + c2;

@@ -9,8 +9,9 @@ bool flif_encode(IO& io, Images &images, const std::vector<std::string> &transDe
 
 template <typename IO>
 bool flif_encode(IO& io, Images &images, const std::vector<std::string> &transDesc =
-                 {"YCoCg","Bounds","Palette_Alpha","Palette","Color_Buckets","Duplicate_Frame","Frame_Shape","Frame_Lookback"}) {
-     flif_options options = FLIF_DEFAULT_OPTIONS;
-     return flif_encode(io, images, transDesc, options);
+{"YCoCg","Bounds","Palette_Alpha","Palette","Color_Buckets","Duplicate_Frame","Frame_Shape","Frame_Lookback"})
+{
+    flif_options options = FLIF_DEFAULT_OPTIONS;
+    return flif_encode(io, images, transDesc, options);
 }
 

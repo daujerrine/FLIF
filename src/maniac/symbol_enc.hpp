@@ -19,36 +19,39 @@
 #pragma once
 
 template <typename RAC>
-void UniformSymbolCoder<RAC>::write_int(int min, int max, int val) {
-        assert(max >= min);
-        if (min != 0) {
-            max -= min;
-            val -= min;
-        }
-        if (max == 0) return;
+void UniformSymbolCoder<RAC>::write_int(int min, int max, int val)
+{
+    assert(max >= min);
+    if (min != 0) {
+        max -= min;
+        val -= min;
+    }
+    if (max == 0) return;
 
-        // split in [0..med] [med+1..max]
-        int med = max/2;
-        if (val > med) {
-            rac.write_bit(true);
-            write_int(med+1, max, val);
-        } else {
-            rac.write_bit(false);
-            write_int(0, med, val);
-        }
-        return;
+    // split in [0..med] [med+1..max]
+    int med = max/2;
+    if (val > med) {
+        rac.write_bit(true);
+        write_int(med+1, max, val);
+    } else {
+        rac.write_bit(false);
+        write_int(0, med, val);
+    }
+    return;
 }
 
 
-template <typename SymbolCoder> void writer(SymbolCoder& coder, int bits, int value) {
-  int pos=0;
-  while (pos++ < bits) {
-    coder.write(value&1, BIT_MANT, pos);
-    value >>= 1;
-  }
+template <typename SymbolCoder> void writer(SymbolCoder& coder, int bits, int value)
+{
+    int pos=0;
+    while (pos++ < bits) {
+        coder.write(value&1, BIT_MANT, pos);
+        value >>= 1;
+    }
 }
 
-template <int bits, typename SymbolCoder> void writer(SymbolCoder& coder, int min, int max, int value) {
+template <int bits, typename SymbolCoder> void writer(SymbolCoder& coder, int min, int max, int value)
+{
     assert(min<=max);
     assert(value>=min);
     assert(value<=max);
@@ -64,7 +67,7 @@ template <int bits, typename SymbolCoder> void writer(SymbolCoder& coder, int mi
     assert(min <= 0 && max >= 0); // should always be the case, because guess should always be in valid range
 
     // only output zero bit if value could also have been zero
-    //if (max >= 0 && min <= 0) 
+    //if (max >= 0 && min <= 0)
     coder.write(false,BIT_ZERO);
     int sign = (value > 0 ? 1 : 0);
     if (max > 0 && min < 0) {
@@ -111,21 +114,24 @@ template <int bits, typename SymbolCoder> void writer(SymbolCoder& coder, int mi
 
 
 template <typename BitChance, typename RAC, int bits>
-void SimpleSymbolBitCoder<BitChance,RAC,bits>::write(bool bit, SymbolChanceBitType typ, int i) {
-        BitChance& bch = ctx.bit(typ, i);
-        rac.write_12bit_chance(bch.get_12bit(), bit);
-        bch.put(bit, table);
+void SimpleSymbolBitCoder<BitChance,RAC,bits>::write(bool bit, SymbolChanceBitType typ, int i)
+{
+    BitChance& bch = ctx.bit(typ, i);
+    rac.write_12bit_chance(bch.get_12bit(), bit);
+    bch.put(bit, table);
 }
 
 
 template <typename BitChance, typename RAC, int bits>
-void SimpleSymbolCoder<BitChance,RAC,bits>::write_int(int min, int max, int value) {
-        SimpleSymbolBitCoder<BitChance, RAC, bits> bitCoder(table, ctx, rac);
-        writer<bits, SimpleSymbolBitCoder<BitChance, RAC, bits> >(bitCoder, min, max, value);
+void SimpleSymbolCoder<BitChance,RAC,bits>::write_int(int min, int max, int value)
+{
+    SimpleSymbolBitCoder<BitChance, RAC, bits> bitCoder(table, ctx, rac);
+    writer<bits, SimpleSymbolBitCoder<BitChance, RAC, bits> >(bitCoder, min, max, value);
 }
 template <typename BitChance, typename RAC, int bits>
-void SimpleSymbolCoder<BitChance,RAC,bits>::write_int(int nbits, int value) {
-        assert (nbits <= bits);
-        SimpleSymbolBitCoder<BitChance, RAC, bits> bitCoder(table, ctx, rac);
-        writer(bitCoder, nbits, value);
+void SimpleSymbolCoder<BitChance,RAC,bits>::write_int(int nbits, int value)
+{
+    assert (nbits <= bits);
+    SimpleSymbolBitCoder<BitChance, RAC, bits> bitCoder(table, ctx, rac);
+    writer(bitCoder, nbits, value);
 }

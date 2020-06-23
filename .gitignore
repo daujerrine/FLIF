@@ -47,3 +47,6 @@ flif.osx
 *.pdb
 *.ilk
 build/tmp-test/
+
+#extra
+**/*.orig

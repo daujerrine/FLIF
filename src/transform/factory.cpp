@@ -19,7 +19,8 @@
 //#include "dct.hpp"
 
 template <typename IO>
-std::unique_ptr<Transform<IO>> create_transform(const std::string &desc) {
+std::unique_ptr<Transform<IO>> create_transform(const std::string &desc)
+{
     if (desc == "YCoCg")
         return make_unique<TransformYCoCg<IO>>();
 // use this if you just want to quickly try YC1C2

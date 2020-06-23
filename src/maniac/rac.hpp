@@ -18,17 +18,17 @@ limitations under the License.
 
 #pragma once
 
-#ifdef STATS
 #include <stdio.h>
-#endif
-
 #include <stdint.h>
 #include <assert.h>
 #include "../config.h"
 #include "../compiler-specific.hpp"
+#define __PLN__ printf("At: [%s] %s, %d\n", __func__, __FILE__, __LINE__);
+#define MSG(fmt, ...) printf("[%s] " fmt, __func__, ##__VA_ARGS__)
 
 /* RAC configuration for 24-bit RAC */
-class RacConfig24 {
+class RacConfig24
+{
 public:
     typedef uint_fast32_t data_t;
     static const data_t MAX_RANGE_BITS = 24;
@@ -36,7 +36,8 @@ public:
     static const data_t MIN_RANGE = (1UL << MIN_RANGE_BITS);
     static const data_t BASE_RANGE = (1UL << MAX_RANGE_BITS);
 
-    static inline data_t chance_12bit_chance(int b12, data_t range) {
+    static inline data_t chance_12bit_chance(int b12, data_t range)
+    {
         assert(b12 > 0);
         assert((b12 >> 12) == 0);
         // We want to compute (range * b12 + 0x800) >> 12. On 64-bit architectures this is no problem
@@ -48,7 +49,8 @@ public:
     }
 };
 
-template <typename Config, typename IO> class RacInput {
+template <typename Config, typename IO> class RacInput
+{
 public:
     typedef typename Config::data_t rac_t;
 protected:
@@ -60,17 +62,20 @@ private:
     rac_t range;
     rac_t low;
 private:
-    rac_t read_catch_eof() {
+    rac_t read_catch_eof()
+    {
         rac_t c = io.get_c();
         // no reason to branch here to catch end-of-stream, just return garbage (0xFF I guess) if a premature EOS happens
         //if(c == io.EOS) return 0;
         return c;
     }
-    void inline input() {
+    void inline input()
+    {
         if (range <= Config::MIN_RANGE) {
             low <<= 8;
             range <<= 8;
             low |= read_catch_eof();
+            //MSG("renorm low = %u range = %u\n", low, range);
         }
         if (range <= Config::MIN_RANGE) {
             low <<= 8;
@@ -78,12 +83,14 @@ private:
             low |= read_catch_eof();
         }
     }
-    bool inline get(rac_t chance) {
+    bool inline get(rac_t chance)
+    {
 #ifdef STATS
         samples++;
 #endif
         assert(chance > 0);
         assert(chance < range);
+        //MSG("\nlow: %d range: %d chance: %d\n", low, range, chance);
         if (low >= range-chance) {
             low -= range-chance;
             range = chance;
@@ -96,7 +103,8 @@ private:
         }
     }
 public:
-    explicit RacInput(IO& ioin) : io(ioin), range(Config::BASE_RANGE), low(0) {
+    explicit RacInput(IO& ioin) : io(ioin), range(Config::BASE_RANGE), low(0)
+    {
 #ifdef STATS
         samples = 0;
 #endif
@@ -109,7 +117,8 @@ public:
     }
 
 #ifdef STATS
-    ~RacInput() {
+    ~RacInput()
+    {
         fprintf(stdout, "Total samples read from range coder: %llu\n", (unsigned long long)samples);
     }
 #endif
@@ -118,13 +127,15 @@ public:
         return get(Config::chance_12bit_chance(b12, range));
     }
 
-    bool inline read_bit() {
+    bool inline read_bit()
+    {
         return get(range >> 1);
     }
 };
 
 
-template <typename IO> class RacInput24 : public RacInput<RacConfig24, IO> {
+template <typename IO> class RacInput24 : public RacInput<RacConfig24, IO>
+{
 public:
     explicit RacInput24(IO& io) : RacInput<RacConfig24, IO>(io) { }
 };

@@ -21,11 +21,16 @@ limitations under the License.
 #include <cstdint>
 #include "bit.hpp"
 
-namespace maniac {
-namespace util {
+namespace maniac
+{
+namespace util
+{
 
-static inline int ilog2(uint32_t l) {
-    if (l == 0) { return 0; }
+static inline int ilog2(uint32_t l)
+{
+    if (l == 0) {
+        return 0;
+    }
 //    return sizeof(unsigned int) * 8 - __builtin_clz(l) - 1;
     return sizeof(unsigned int) * 8 - 1 - __builtin_clz(l);
 }

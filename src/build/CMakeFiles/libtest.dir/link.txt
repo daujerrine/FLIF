@@ -1,0 +1,1 @@
+/usr/bin/cc  -Wall -Wextra  -rdynamic CMakeFiles/libtest.dir/home/turpentine/Documents/sources/FLIF/tools/test.c.o  -o libtest -Wl,-rpath,/home/turpentine/Documents/sources/FLIF/src/build libflif.so.0 -lpng 

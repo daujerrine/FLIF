@@ -1,0 +1,2 @@
+/usr/bin/ar qc libpixbufloader-flif.a  CMakeFiles/pixbufloader-flif-static.dir/flif-pixbuf-loader.c.o
+/usr/bin/ranlib libpixbufloader-flif.a

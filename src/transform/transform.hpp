@@ -25,7 +25,8 @@ limitations under the License.
 
 
 template <typename IO>
-class Transform {
+class Transform
+{
 protected:
 
 public:
@@ -39,16 +40,34 @@ public:
     //                                             <decoding>, invData
 
 
-    bool virtual init(const ColorRanges *) { return true; }
-    bool virtual undo_redo_during_decode() { return true; }
+    bool virtual init(const ColorRanges *)
+    {
+        return true;
+    }
+    bool virtual undo_redo_during_decode()
+    {
+        return true;
+    }
     void virtual configure(const int) { }
-    bool virtual load(const ColorRanges *, RacIn<IO> &) { return true; };
+    bool virtual load(const ColorRanges *, RacIn<IO> &)
+    {
+        return true;
+    };
 #ifdef HAS_ENCODER
-    bool virtual process(const ColorRanges *, const Images &) { return true; };
+    bool virtual process(const ColorRanges *, const Images &)
+    {
+        return true;
+    };
     void virtual save(const ColorRanges *, RacOut<IO> &) const {};
     void virtual data(Images&) const {}
 #endif
-    const ColorRanges virtual *meta(Images&, const ColorRanges *srcRanges) { return new DupColorRanges(srcRanges); }
+    const ColorRanges virtual *meta(Images&, const ColorRanges *srcRanges)
+    {
+        return new DupColorRanges(srcRanges);
+    }
     void virtual invData(Images&, FLIF_UNUSED(uint32_t strideCol)=1, FLIF_UNUSED(uint32_t strideRow)=1) const {}
-    bool virtual is_palette_transform() const { return false; }
+    bool virtual is_palette_transform() const
+    {
+        return false;
+    }
 };

@@ -3,7 +3,8 @@
 #include "symbol.hpp"
 
 #ifdef STATS
-std::string SymbolChanceStats::format() const {
+std::string SymbolChanceStats::format() const
+{
     std::stringstream ss;
     ss << "zero," << stats_zero.format() << ", ";
     ss << "sign," << stats_sign.format() << ", ";
@@ -16,7 +17,8 @@ std::string SymbolChanceStats::format() const {
     return ss.str();
 }
 
-SymbolChanceStats::~SymbolChanceStats() {
+SymbolChanceStats::~SymbolChanceStats()
+{
     fprintf(stderr, "STATS: %s\n", format().c_str());
 }
 
