@@ -51,39 +51,53 @@ public:
     }
     void snap(const int p, const prevPlanes &pp, ColorVal &min, ColorVal &max, ColorVal &v) const override
     {
+        printf("bounds_snap\n");
         if (p==0 || p==3) {
             min=bounds[p].first;    // optimization for special case
             max=bounds[p].second;
+            printf("b1 %d %d %d\n", min, max, v);
         } else {
             ranges->snap(p,pp,min,max,v);
             if (min < bounds[p].first) min=bounds[p].first;
             if (max > bounds[p].second) max=bounds[p].second;
+            printf("b2 %d %d %d\n", min, max, v);
             if (min>max) {
                 // should happen only if alpha=0 interpolation produces YI combination for which Q range from ColorRangesYIQ is outside bounds
                 min=bounds[p].first;
                 max=bounds[p].second;
             }
+            printf("b3 %d %d %d\n", min, max, v);
         }
-        if(v>max) v=max;
-        if(v<min) v=min;
+        if(v>max)
+            v=max;
+        if(v<min)
+            v=min;
+        printf("b4 %d %d %d\n", min, max, v);
     }
     void minmax(const int p, const prevPlanes &pp, ColorVal &min, ColorVal &max) const override
     {
+        printf("bounds_minmax\n");
         assert(p<numPlanes());
         if (p==0 || p==3) {
             min=bounds[p].first;    // optimization for special case
             max=bounds[p].second;
+            printf("b1 min = %d max = %d\n", min, max);
             return;
         }
         ranges->minmax(p, pp, min, max);
+        printf("b2 min = %d max = %d\n", min, max);
         if (min < bounds[p].first) min=bounds[p].first;
+        printf("b3 min = %d max = %d\n", min, max);
         if (max > bounds[p].second) max=bounds[p].second;
+        printf("b4 min = %d max = %d\n", min, max);
         if (min>max) {
             // should happen only if alpha=0 interpolation produces YI combination for which Q range from ColorRangesYIQ is outside bounds
             min=bounds[p].first;
             max=bounds[p].second;
+            printf("b5 min = %d max = %d\n", min, max);
         }
         assert(min <= max);
+        printf("b6 min = %d max = %d\n", min, max);
     }
 };
 

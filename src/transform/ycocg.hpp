@@ -190,6 +190,7 @@ public:
 
     void minmax(const int p, const prevPlanes &pp, ColorVal &minv, ColorVal &maxv) const override
     {
+        printf("ycocg_minmax\n");
         if (p==1) {
             minv=get_min_co(par, pp[0]);
             maxv=get_max_co(par, pp[0]);
@@ -203,6 +204,7 @@ public:
             maxv=get_max_y(par);
             return;
         } else ranges->minmax(p,pp,minv,maxv);
+        printf("y minmax %d %d %d\n", minv, maxv);
     }
 };
 

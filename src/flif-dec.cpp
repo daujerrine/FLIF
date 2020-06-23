@@ -66,7 +66,7 @@ void flif_decode_scanline_plane(plane_t &plane, Coder &coder, Images &images,
                                 const ColorVal minP, const bool alphazero,
                                 const bool FRA)
 {
-    ColorVal min,max;
+    ColorVal min = 0,max = 0;
     Image& image = images[fr];
     uint32_t begin=0, end=image.cols();
 #ifdef SUPPORT_ANIMATION

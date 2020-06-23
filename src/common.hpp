@@ -123,6 +123,7 @@ ColorVal predict_and_calcProps_scanlines_plane(Properties &properties,
     ColorVal gradientTL = left + top - topleft;
     guess = median3(gradientTL, left, top);
     ranges->snap(p,properties,min,max,guess);
+    printf("min = %d max = %d\n", min, max);
     assert(min >= ranges->min(p));
     assert(max <= ranges->max(p));
     assert(guess >= min);
@@ -171,7 +172,7 @@ ColorVal predict_and_calcProps_scanlines_plane(Properties &properties,
         printf("%d ", properties[i]);
     printf("\n");
     printf("psl fallback = %d left = %d top = %d topleft = %d gradienttl = %d guess = %d\n", fallback, left, top, topleft, gradientTL, guess);
-    printf("r = %u c = %u min = %u max = %u\n", r, c, min, max);
+    printf("p = %u r = %u c = %u min = %d max = %d\n", p, r, c, min, max);
     return guess;
 }
 
