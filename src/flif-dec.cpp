@@ -1721,6 +1721,8 @@ bool flif_decode(IO& io, Images &images, callback_t callback, void *user_data,
     }
     transforms.clear();
     rangesList.clear();
+    printf("Final Output\n============================\n");
+    __SUBST__
 
 
     if (!options.crc_check) {

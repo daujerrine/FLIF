@@ -144,11 +144,11 @@ private:
     unsigned int nb_properties;
     std::vector<FinalCompoundSymbolChances<BitChance,bits> > leaf_node;
     Tree &inner_node;
-
     FinalCompoundSymbolChances<BitChance,bits> inline &find_leaf(const Properties &properties) ATTRIBUTE_HOT {
         Tree::size_type pos = 0;
         while(inner_node[pos].property != -1)
         {
+            printf("pos = %u, prop = %d\n", pos, inner_node[pos].property);
             if (inner_node[pos].count < 0) {
                 if (properties[inner_node[pos].property] > inner_node[pos].splitval) {
                     pos = inner_node[pos].childID;
