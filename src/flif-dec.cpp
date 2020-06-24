@@ -1695,6 +1695,8 @@ bool flif_decode(IO& io, Images &images, callback_t callback, void *user_data,
         while(!transform_ptrs.empty()) {
             transform_ptrs.back()->invData(images);
             transform_ptrs.pop_back();
+            printf("Transform Step\n===========\n");
+            __SUBST__
         }
     } else {
         // do reverse transforms up to palette
@@ -1702,6 +1704,8 @@ bool flif_decode(IO& io, Images &images, callback_t callback, void *user_data,
             transform_ptrs.back()->invData(images);
             transform_ptrs.pop_back();
             rangesList.pop_back();
+            printf("Transform Step\n===========\n");
+            __SUBST__
         }
         if (!transform_ptrs.empty()) {
             // construct palette on a single-row image
