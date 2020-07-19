@@ -33,6 +33,8 @@
 #include "common.hpp"
 #include "fileio.hpp"
 
+bool use_transforms = true;
+
 using namespace maniac::util;
 
 template<typename RAC> void static write_name(RAC& rac, std::string desc)
@@ -951,43 +953,44 @@ bool flif_encode(IO& io, Images &images, const std::vector<std::string> &transDe
 
     std::vector<std::unique_ptr<Transform<IO>>> transforms;
     int warn_about_incompatibility = 0;
-
-    try {
-        for (unsigned int i=0; i<transDesc.size(); i++) {
-            auto trans = create_transform<IO>(transDesc[i]);
-            auto previous_range = rangesList.back().get();
-            if (transDesc[i] == "Palette" || transDesc[i] == "Palette_Alpha") trans->configure(options.palette_size);
-#ifdef SUPPORT_ANIMATION
-            if (transDesc[i] == "Frame_Lookback") trans->configure(options.lookback);
-#endif
-            if (transDesc[i] == "PermutePlanes") trans->configure(options.subtract_green);
-            if (!trans->init(previous_range) ||
-                    (!trans->process(previous_range, images)
-                     && !(options.acb==1 && transDesc[i] == "Color_Buckets" && (v_printf(3,", forced "), (tcount=0), true) ))) {
-                //e_printf( "Transform '%s' failed\n", transDesc[i].c_str());
-                if (images[0].palette && transDesc[i] == "Palette_Alpha" && options.keep_palette) {
-                    v_printf(2,"Could not keep palette for some reason. Aborting.\n");
-                    return false;
+    if (use_transforms) {
+        try {
+            for (unsigned int i=0; i<transDesc.size(); i++) {
+                auto trans = create_transform<IO>(transDesc[i]);
+                auto previous_range = rangesList.back().get();
+                if (transDesc[i] == "Palette" || transDesc[i] == "Palette_Alpha") trans->configure(options.palette_size);
+    #ifdef SUPPORT_ANIMATION
+                if (transDesc[i] == "Frame_Lookback") trans->configure(options.lookback);
+    #endif
+                if (transDesc[i] == "PermutePlanes") trans->configure(options.subtract_green);
+                if (!trans->init(previous_range) ||
+                        (!trans->process(previous_range, images)
+                         && !(options.acb==1 && transDesc[i] == "Color_Buckets" && (v_printf(3,", forced "), (tcount=0), true) ))) {
+                    //e_printf( "Transform '%s' failed\n", transDesc[i].c_str());
+                    if (images[0].palette && transDesc[i] == "Palette_Alpha" && options.keep_palette) {
+                        v_printf(2,"Could not keep palette for some reason. Aborting.\n");
+                        return false;
+                    }
+                } else {
+                    if (tcount++ > 0) v_printf(3,", ");
+                    v_printf(3,"%s", transDesc[i].c_str());
+                    fflush(stdout);
+                    rac.write_bit(true);
+                    write_name(rac, transDesc[i]);
+                    trans->save(previous_range, rac);
+                    fflush(stdout);
+                    rangesList.push_back(std::unique_ptr<const ColorRanges>(trans->meta(images, previous_range)));
+                    trans->data(images);
+                    if (transDesc[i] == "Color_Buckets") warn_about_incompatibility = 1;
+                    if (warn_about_incompatibility && (transDesc[i] == "Frame_Lookback" || transDesc[i] == "Duplicate_Frame" || transDesc[i] == "Frame_Shape"))
+                        warn_about_incompatibility = 2;
+                    if (options.just_add_loss) transforms.push_back(std::move(trans));
                 }
-            } else {
-                if (tcount++ > 0) v_printf(3,", ");
-                v_printf(3,"%s", transDesc[i].c_str());
-                fflush(stdout);
-                rac.write_bit(true);
-                write_name(rac, transDesc[i]);
-                trans->save(previous_range, rac);
-                fflush(stdout);
-                rangesList.push_back(std::unique_ptr<const ColorRanges>(trans->meta(images, previous_range)));
-                trans->data(images);
-                if (transDesc[i] == "Color_Buckets") warn_about_incompatibility = 1;
-                if (warn_about_incompatibility && (transDesc[i] == "Frame_Lookback" || transDesc[i] == "Duplicate_Frame" || transDesc[i] == "Frame_Shape"))
-                    warn_about_incompatibility = 2;
-                if (options.just_add_loss) transforms.push_back(std::move(trans));
             }
+        } catch (std::bad_alloc& ba) {
+            e_printf("Error: could not allocate enough memory for transforms. Aborting. Try -E0.\n");
+            return false;
         }
-    } catch (std::bad_alloc& ba) {
-        e_printf("Error: could not allocate enough memory for transforms. Aborting. Try -E0.\n");
-        return false;
     }
 
     if (tcount==0) v_printf(3,"none\n");

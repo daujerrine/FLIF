@@ -122,7 +122,9 @@ ColorVal predict_and_calcProps_scanlines_plane(Properties &properties,
     ColorVal topleft = (nobordercases || (r>0 && c>0) ? plane.get(r-1,c-1) : (r > 0 ? top : left));
     ColorVal gradientTL = left + top - topleft;
     guess = median3(gradientTL, left, top);
+    printf("g %d\n", guess); 
     ranges->snap(p,properties,min,max,guess);
+    printf("g %d\n", guess); 
     printf("min = %d max = %d\n", min, max);
     assert(min >= ranges->min(p));
     assert(max <= ranges->max(p));

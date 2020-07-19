@@ -239,6 +239,10 @@ public:
     virtual void prepare_zoomlevel(const int z) const =0;
     virtual ColorVal get_fast(size_t r, size_t c) const =0;
     virtual void set_fast(size_t r, size_t c, ColorVal x) =0;
+    virtual void printvals()
+    {
+        printf("null null null");
+    }
 
     virtual bool is_constant() const
     {
@@ -414,6 +418,11 @@ public:
 
         data[(r*zoom_rowpixelsize(z)>>s)*width + (c*zoom_colpixelsize(z)>>s)] = x;
     }
+
+    void printvals() {
+        printf(" %d %d %d", s, s_r, s_c);
+    }
+
     ColorVal get(const int z, const size_t r, const size_t c) const override
     {
 //        return get(r*zoom_rowpixelsize(z),c*zoom_colpixelsize(z));
@@ -470,6 +479,10 @@ public:
         return color;
     }
 
+    void printvals()
+    {
+        printf("const");
+    }
     void prepare_zoomlevel(FLIF_UNUSED(const int z)) const override {}
     ColorVal get_fast(FLIF_UNUSED(size_t r), FLIF_UNUSED(size_t c)) const override
     {

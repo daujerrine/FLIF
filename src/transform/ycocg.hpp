@@ -190,25 +190,25 @@ public:
 
     void minmax(const int p, const prevPlanes &pp, ColorVal &minv, ColorVal &maxv) const override
     {
-        printf("ycocg_minmax\n");
+        //printf("ycocg_minmax\n");
         if (p==1) {
             minv=get_min_co(par, pp[0]);
             maxv=get_max_co(par, pp[0]);
-            printf("y minmax %d %d %d\n", minv, maxv, p);
+            //printf("y minmax %d %d %d\n", minv, maxv, p);
             return;
         } else if (p==2) {
             minv=get_min_cg(par, pp[0], pp[1]);
             maxv=get_max_cg(par, pp[0], pp[1]);
-            printf("y minmax %d %d %d\n", minv, maxv, p);
+            //printf("y minmax %d %d %d\n", minv, maxv, p);
             return;
         } else if (p==0) {
             minv=0;
             maxv=get_max_y(par);
-            printf("y minmax %d %d %d\n", minv, maxv, p);
+            //printf("y minmax %d %d %d\n", minv, maxv, p);
             return;
         } else {
             ranges->minmax(p,pp,minv,maxv);
-            printf("y minmax %d %d %d\n", minv, maxv, p);
+            //printf("y minmax %d %d %d\n", minv, maxv, p);
         }
     }
 };

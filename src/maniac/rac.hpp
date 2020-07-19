@@ -90,7 +90,7 @@ private:
 #endif
         assert(chance > 0);
         assert(chance < range);
-        //MSG("\nlow: %d range: %d chance: %d\n", low, range, chance);
+        //printf("low = %d range = %d chance = %d\n", low, range, chance);
         if (low >= range-chance) {
             low -= range-chance;
             range = chance;

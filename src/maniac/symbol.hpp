@@ -203,13 +203,17 @@ template <int bits, typename SymbolCoder> int reader(SymbolCoder& coder, int min
 {
     assert(min<=max);
     if (min == max) {
+        //printf("min == max\n");
         return min;
     }
     bool sign;
+    int minabs1;
+    int maxabs0;
+    int pos;
     assert(min <= 0 && max >= 0); // should always be the case, because guess should always be in valid range
 
     if (coder.read(BIT_ZERO)) {
-       // MSG("bit zero\n");
+        //printf("bit zero\n");
         return 0;
     }
     if (min < 0) {
@@ -240,13 +244,13 @@ template <int bits, typename SymbolCoder> int reader(SymbolCoder& coder, int min
 
     int have = (1 << e);
     int left = have-1;
-    for (int pos = e; pos>0;) {
+    for (pos = e; pos>0;) {
         //int bit = 1;
         //left ^= (1 << (--pos));
         left >>= 1;
         pos--;
-        int minabs1 = have | (1<<pos);
-        int maxabs0 = have | left;
+        minabs1 = have | (1<<pos);
+        maxabs0 = have | left;
         if (minabs1 > amax) { // 1-bit is impossible
             //bit = 0;
             continue;
@@ -260,6 +264,7 @@ template <int bits, typename SymbolCoder> int reader(SymbolCoder& coder, int min
         else have = minabs1;
         //have |= (bit << pos);
     }
+    //printf("%d %d %u %d %d %d %d %d %d %d %d %d \n", min, max, sign, amin, amax, emax, e, minabs1, maxabs0, left, have, pos);
     return (sign ? have : -have);
 }
 
@@ -284,7 +289,7 @@ public:
     bool read(SymbolChanceBitType typ, int i = 0)
     {
         BitChance& bch = ctx.bit(typ, i);
-        MSG("type: %d i: %d bitchance: %d\n", typ, i, bch.get_12bit());
+        //printf("put: type = %d chance = %d\n", (typ > 1) ? ((typ > 2) ? (36 + i) : 2 + i) : typ, bch.get_12bit());
         bool bit = rac.read_12bit_chance(bch.get_12bit());
         bch.put(bit, table);
         return bit;

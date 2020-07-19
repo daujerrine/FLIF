@@ -148,7 +148,7 @@ private:
         Tree::size_type pos = 0;
         while(inner_node[pos].property != -1)
         {
-            printf("pos = %u, prop = %d\n", pos, inner_node[pos].property);
+            //printf("pos = %u, prop = %d\n", pos, inner_node[pos].property);
             if (inner_node[pos].count < 0) {
                 if (properties[inner_node[pos].property] > inner_node[pos].splitval) {
                     pos = inner_node[pos].childID;
@@ -176,7 +176,7 @@ private:
                 }
             }
         }
-        printf("leaf: %d\n", inner_node[pos].leafID);
+        //printf("leaf: %d\n", inner_node[pos].leafID);
         return leaf_node[inner_node[pos].leafID];
     }
 
@@ -259,11 +259,6 @@ public:
         //    return false;
         int p = n.property = coder[0].read_int2(0,nb_properties)-1;
         if (p != -1) {
-            /*if(pos > 170) {
-                for(unsigned int i = 0; i < subrange.size(); ++i)
-                    printf("%u: (%d, %d) ", i, subrange[i].first, subrange[i].second);
-                printf("\n");
-            }*/
             int oldmin = subrange[p].first;
             int oldmax = subrange[p].second;
             if (oldmin >= oldmax) {
@@ -271,27 +266,34 @@ public:
                 return false;
             }
             n.count = coder[1].read_int2(CONTEXT_TREE_MIN_COUNT, CONTEXT_TREE_MAX_COUNT); // * CONTEXT_TREE_COUNT_QUANTIZATION;
+            for(unsigned int i = 0; i < subrange.size(); ++i)
+                printf("%u: (%d, %d) ", i, subrange[i].first, subrange[i].second);
+            printf("\n");
             assert(oldmin < oldmax);
+            //printf("===\n");
             int splitval = n.splitval = coder[2].read_int2(oldmin, oldmax-1);
+            //printf("%d %d %d\n", splitval, oldmin, oldmax - 1);
             int childID = n.childID = tree.size();
-            MSG("%d\t%d\t%d\t%d\t%u\t%d\t%d\n", pos, p, n.count, n.splitval, n.childID, oldmin, oldmax);
+            printf("%d\t%d\t%d\t%d\t%u\t%d\t%d\n", pos, p, n.count, n.splitval, n.childID, oldmin, oldmax);
             //v_printf( "Pos %i: prop %i splitval %i [oldmin %i.. oldmax %i]\n", pos, n.property, splitval, oldmin, oldmax-1);
             tree.push_back(PropertyDecisionNode());
             tree.push_back(PropertyDecisionNode());
             // > splitval
             ++depth;
+            printf("Left curr: %d pval: %d\n", childID, p);
             subrange[p].first = splitval+1;
             if (!read_subtree(childID, subrange, tree)) return false;
-            MSG("To right child cur: %d to: %d pvalue: %d\n", pos, childID+1, p);
+            printf("Right curr: %d pval: %d\n", childID+1, p);
             // <= splitval
             subrange[p].first = oldmin;
             subrange[p].second = splitval;
             if (!read_subtree(childID+1, subrange, tree)) return false;
-            MSG("Back cur: %d pvalue %d\n", pos, p);
+            printf("Back curr: %d pval: %d\n", pos, p);
             subrange[p].second = oldmax;
-        } else
-            MSG("Leaf %d\n", pos);
-        --depth;
+        } else {
+            
+            printf("leaf: %d\n", pos);
+        }
         return true;
     }
     bool read_tree(Tree &tree)
@@ -299,10 +301,18 @@ public:
         depth = 1000;
         Ranges rootrange(range);
         tree.clear();
-        MSG("   pos\tprop\tcount\tsplitv\tchild\tomin\tomax\n");
+        printf("   pos\tprop\tcount\tsplitv\tchild\tomin\tomax\n");
         tree.push_back(PropertyDecisionNode());
         if (read_subtree(0, rootrange, tree)) {
             v_printf(6,"Read MANIAC tree with %u inner nodes.\n",(unsigned int) tree.size());
+            printf("Trace:\n");
+            for(unsigned int i = 0; i < tree.size(); ++i)
+                printf("%u\t%d\t%d\t%d\t%d\t%d\n", i,
+                                               tree[i].property,
+                                               tree[i].count,
+                                               tree[i].splitval,
+                                               tree[i].childID,
+                                               tree[i].leafID);
             return true;
         } else return false;
         //return read_subtree(0, rootrange, tree);

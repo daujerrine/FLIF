@@ -18,23 +18,23 @@ public:
     {
         minv=min(p);
         maxv=max(p);
-        printf("s minmax %d %d %d\n", minv, maxv, p);
+        //printf("s minmax %d %d %d\n", minv, maxv, p);
     }
     virtual void snap(const int p, const prevPlanes &pp, ColorVal &minv, ColorVal &maxv, ColorVal &v) const
     {
-        printf("static_snap\n");
-        printf("s1 %d %d %d\n", minv, maxv, v);
+        //printf("static_snap\n");
+        //printf("s1 %d %d %d\n", minv, maxv, v);
         minmax(p,pp,minv,maxv);
-        printf("s2 %d %d %d\n", minv, maxv, v);
+        //printf("s2 %d %d %d\n", minv, maxv, v);
         if (minv > maxv) { //e_printf("Corruption detected!\n");
             // this should only happen on malicious/corrupt input files, or while adding loss
             maxv=minv;
         }
-        printf("s3 %d %d %d\n", minv, maxv, v);
+        //printf("s3 %d %d %d\n", minv, maxv, v);
         assert(minv <= maxv);
         if(v>maxv) v=maxv;
         if(v<minv) v=minv;
-        printf("s4 %d %d %d\n===\n", minv, maxv, v);
+        //printf("s4 %d %d %d\n===\n", minv, maxv, v);
         assert(v <= maxv);
         assert(v >= minv);
     }
